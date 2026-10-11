@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BolDataSat · Control de activos</title>
+<link rel="icon" href="logo.jpg">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    /* Paleta tomada del logotipo de BolDataSat */
+    --tinta:#13213A; --tinta2:#3A4A66; --suave:#6E7480; --linea:#DCE1E9; --papel:#FFFFFF; --fondo:#F2F4F7;
+    --azul:#13213A; --azul2:#E7EBF3; --rojo:#E11B22; --rojo2:#FDE6E7;
+    --acento:#13213A; --acento2:#E7EBF3; --ok:#1E7A4C; --ok2:#E2F2E9;
+    --ambar:#A86A12; --ambar2:#FBEBC4; --oxido:#B3171D; --oxido2:#FDE3E4;
+    --mono:'IBM Plex Mono',ui-monospace,monospace; --sans:'Montserrat',system-ui,sans-serif; --r:10px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--fondo);color:var(--tinta);font-family:var(--sans);font-size:15px;line-height:1.45}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .barra{background:#fff;color:var(--azul);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;border-bottom:3px solid var(--rojo)}
+  .marca{display:flex;align-items:center;gap:16px;min-width:0}
+  .marca img{height:54px;width:auto;display:block}
+  .sistema{border-left:2px solid var(--linea);padding-left:14px;line-height:1.2}
+  .sistema b{display:block;font-weight:800;font-size:14px;letter-spacing:.2px}
+  .sistema span{font-size:11px;color:var(--suave);letter-spacing:.6px;text-transform:uppercase}
+  .usuario{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--suave)}
+  .usuario b{color:var(--azul);font-weight:700}
+  .usuario button{background:var(--azul);border:0;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:600}
+  nav.tabs{display:flex;gap:4px;background:var(--azul);padding:0 16px}
+  nav.tabs button{background:none;border:0;color:#AEB8CC;padding:12px 14px;cursor:pointer;font-weight:700;border-bottom:3px solid transparent;letter-spacing:.2px}
+  nav.tabs button.on{color:#fff;border-bottom-color:var(--rojo)}
+  main{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+  h1{font-size:23px;margin:0 0 4px;font-weight:800;letter-spacing:-.3px;color:var(--azul)}
+  h2{font-size:15px;margin:0 0 12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tinta2)}
+  .muted{color:var(--suave)}
+  .mono{font-family:var(--mono)}
+  .panel{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:18px}
+  .fila{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .entre{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .btn{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{border-color:var(--tinta2)}
+  .btn.pri{background:var(--azul);border-color:var(--azul);color:#fff}
+  .btn.pri:hover{background:#0B1528}
+  .btn.osc{background:#fff;border-color:var(--azul);color:var(--azul)}
+  .btn.rojo{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .btn.peligro{color:var(--oxido);border-color:#E4B9AC}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .kpi{background:var(--papel);border:1px solid var(--linea);border-left:4px solid var(--azul);border-radius:var(--r);padding:14px 16px}
+  .kpi:nth-child(3){border-left-color:var(--rojo)}
+  .kpi .v{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px;color:var(--azul)}
+  .kpi .l{font-size:12px;color:var(--suave);text-transform:uppercase;letter-spacing:.5px}
+  .filtros{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+  input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{width:100%;background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:9px 11px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--acento2);border-color:var(--acento)}
+  label.campo{display:block;font-size:12px;font-weight:600;color:var(--tinta2);text-transform:uppercase;letter-spacing:.4px}
+  label.campo>input,label.campo>select,label.campo>textarea{margin-top:5px;text-transform:none;letter-spacing:0;font-weight:400;font-size:15px;color:var(--tinta)}
+  .rejilla{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .rejilla .ancho{grid-column:1/-1}
+  .tabla{width:100%;border-collapse:collapse;background:var(--papel)}
+  .tabla th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--suave);padding:10px;border-bottom:2px solid var(--linea);white-space:nowrap}
+  .tabla td{padding:10px;border-bottom:1px solid #EDF0F5;vertical-align:top}
+  .tabla tr.clic{cursor:pointer}.tabla tr.clic:hover td{background:#F6F8FB}
+  .tabla .num{text-align:right;font-family:var(--mono);white-space:nowrap}
+  .envoltura{border:1px solid var(--linea);border-radius:var(--r);overflow:auto;background:var(--papel)}
+  .cod{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--azul2);color:var(--azul);padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+  .chip.Operativo,.chip.Normal{background:var(--ok2);color:var(--ok)}
+  .chip.En.mantenimiento,.chip.Reponer{background:var(--ambar2);color:var(--ambar)}
+  .chip.En.desuso{background:#E8E6E1;color:var(--tinta2)}
+  .chip.Dado,.chip.Sin{background:var(--oxido2);color:var(--oxido)}
+  .selbar{position:sticky;bottom:12px;margin-top:14px;background:var(--azul);border-bottom:3px solid var(--rojo);color:#fff;border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .ficha{display:grid;grid-template-columns:320px 1fr;gap:18px}
+  .foto{background:var(--azul2);border-radius:var(--r);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--suave);font-size:13px}
+  .foto img{width:100%;height:100%;object-fit:cover}
+  .datos{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid #EDF0F5}
+  .datos div{padding:10px 0;border-bottom:1px solid #EDF0F5;padding-right:10px}
+  .datos dt{font-size:11px;color:var(--suave);text-transform:uppercase;letter-spacing:.5px;margin:0}
+  .datos dd{margin:2px 0 0;font-weight:500;word-break:break-word}
+  .barraDep{height:8px;background:var(--azul2);border-radius:6px;overflow:hidden;margin:6px 0 4px}
+  .barraDep i{display:block;height:100%;background:linear-gradient(90deg,var(--azul),var(--azul) 85%,var(--rojo))}
+  .cuadroDep{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .cuadroDep div{background:#F6F8FB;border-radius:8px;padding:10px}
+  .cuadroDep .clave{background:var(--azul);color:#fff}.cuadroDep .clave span{color:#C7D0E0}
+  .cuadroDep b{display:block;font-family:var(--mono);font-size:16px}
+  .cuadroDep span{font-size:11px;color:var(--suave);text-transform:uppercase;letter-spacing:.4px}
+  .aviso{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:12px 18px;border-radius:10px;z-index:50;max-width:92vw;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+  .aviso.error{background:var(--oxido)}
+  .nota{background:var(--ambar2);color:#6B4A0F;border-radius:8px;padding:10px 12px;font-size:13px}
+  .nota.ok{background:var(--azul2);color:var(--azul)}
+  .cargando{display:flex;align-items:center;gap:12px;color:var(--suave);padding:40px 0;justify-content:center}
+  .spin{width:18px;height:18px;border:2px solid var(--linea);border-top-color:var(--rojo);border-radius:50%;animation:g 0.8s linear infinite}
+  @keyframes g{to{transform:rotate(360deg)}}
+  .login{max-width:400px;margin:40px auto;border-top:4px solid var(--rojo)}
+  .login .logoGrande{display:block;width:230px;max-width:80%;margin:4px auto 18px}
+  .publica{max-width:520px;margin:0 auto}
+  .publica .encab{display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px}
+  .vacio{text-align:center;padding:36px 10px;color:var(--suave)}
+  .mt{margin-top:16px}.mt2{margin-top:24px}
+  .hist td{font-size:13px}
+  .qrFicha{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+  .qrFicha #qrF img,.qrFicha #qrF canvas{width:120px!important;height:120px!important;display:block}
+  .qrFicha #qrF canvas{display:none!important}
+
+  /* Etiquetas */
+  .hojaEt{background:#fff;border:1px solid var(--linea);border-radius:var(--r);padding:8mm;width:100%;max-width:216mm;margin:0 auto}
+  .gridEt{display:grid;gap:3mm}
+  .et{border:1px dashed #C9C2B3;border-radius:2mm;padding:2.5mm;text-align:center;break-inside:avoid;page-break-inside:avoid;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .et{border-top:1.2mm solid #E11B22}
+  .et .elogo{display:block;width:64%;height:auto;margin:0 auto 1.5mm}
+  .et .qr img,.et .qr canvas{display:block;width:100%!important;height:auto!important}
+  .et .qr canvas{display:none!important}
+  .et .e2{font-family:var(--mono);font-weight:600;margin-top:1.2mm;letter-spacing:.3px;color:#13213A}
+  .et .e3{font-size:6.5pt;color:#444;line-height:1.15;margin-top:.6mm;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+  @media (max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .filtros{grid-template-columns:1fr 1fr}
+    .filtros .buscar{grid-column:1/-1}
+    .rejilla{grid-template-columns:1fr}
+    .ficha{grid-template-columns:1fr}
+    .cuadroDep{grid-template-columns:repeat(2,1fr)}
+    .ocultaMovil{display:none}
+    .barra{padding:8px 12px}.sistema{display:none}.marca img{height:38px}
+    main{padding:16px 12px 60px}
+  }
+  @media print{
+    @page{size:letter;margin:8mm}
+    body{background:#fff}
+    body *{visibility:hidden}
+    #hojaEt,#hojaEt *{visibility:visible}
+    #hojaEt{position:absolute;left:0;top:0;border:0;padding:0;max-width:none}
+    .et{border-color:#999;border-top-color:#E11B22;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+<header class="barra">
+  <div class="marca">
+    <img id="logo" src="logo.jpg" alt="BolDataSat Technologies S.R.L.">
+    <div class="sistema"><b>Control de activos</b><span>Activos fijos e inventarios</span></div>
+  </div>
+  <div class="usuario" id="usuario"></div>
+</header>
+<nav class="tabs" id="tabs" hidden>
+  <button data-t="activos" class="on">Activos fijos</button>
+  <button data-t="inventario">Inventarios</button>
+</nav>
+<main id="app"></main>
+<div id="aviso" class="aviso" hidden></div>
+
+<script>
+/* Dirección de la implementación de Apps Script (termina en /exec) */
+const API = 'https://script.google.com/macros/s/AKfycbwFO7oSwEIPQ_CizumK69OxE2zLqM46LqslD5zWv7YZWkkB2kf0wh722KgJ2AHY6Upr/exec';
+const CODIGO_INICIAL = (new URLSearchParams(location.search).get('c') || '').replace(/[^A-Za-z0-9\-]/g, '').slice(0, 30).toUpperCase();
+const LOGO = document.getElementById('logo').src;
+
+const S = { token:null, sesion:null, listas:null, activos:[], empresa:'', url:'', fechaCalculo:'', ufv:true,
+            sel:new Set(), f:{q:'', ubi:'', cat:'', est:'vigentes'}, inv:null };
+const $ = (s, r=document) => r.querySelector(s);
+const app = $('#app');
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf = new Intl.NumberFormat('es-BO', {minimumFractionDigits:2, maximumFractionDigits:2});
+const nq = new Intl.NumberFormat('es-BO', {maximumFractionDigits:4});
+const bs = v => 'Bs ' + nf.format(Number(v) || 0);
+const fecha = s => s ? s.split('-').reverse().join('/') : '—';
+const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const puedeEditar = () => S.sesion && S.sesion.rol !== 'Consulta';
+const esAdmin = () => S.sesion && S.sesion.rol === 'Administrador';
+const chip = t => `<span class="chip ${esc(t)}">${esc(t)}</span>`;
+const opciones = (lista, sel, vacio) => (vacio !== undefined ? `<option value="">${esc(vacio)}</option>` : '') +
+  lista.map(v => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+
+function guardarToken(t){ try { t ? localStorage.setItem('ca_token', t) : localStorage.removeItem('ca_token'); } catch(e){} }
+function leerToken(){ try { return localStorage.getItem('ca_token'); } catch(e){ return null; } }
+
+async function srv(fn, ...args){
+  let j;
+  try {
+    const r = await fetch(API, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) });
+    j = await r.json();
+  } catch(e){
+    throw new Error('No hay conexión con la base de datos. Revise su internet o que la implementación esté publicada para "Cualquiera".');
+  }
+  if (!j.ok){
+    if (String(j.error).includes('SESION_EXPIRADA')) { salir(true); throw new Error('Su sesión expiró. Ingrese nuevamente.'); }
+    throw new Error(String(j.error).replace(/^Error:\s*/, ''));
+  }
+  return j.data;
+}
+
+function aviso(msg, tipo){
+  const a = $('#aviso'); a.textContent = msg; a.className = 'aviso ' + (tipo || ''); a.hidden = false;
+  clearTimeout(aviso.t); aviso.t = setTimeout(() => a.hidden = true, 4500);
+}
+function cargando(txt){ app.innerHTML = `<div class="cargando"><span class="spin"></span>${esc(txt || 'Cargando…')}</div>`; }
+function ocupado(btn, si){ if (btn){ btn.disabled = si; } }
+
+/* ------------------------------------------------------------- Sesión */
+
+async function iniciar(){
+  S.token = leerToken();
+  if (S.token){
+    cargando();
+    try { await cargarDatos(); } catch(e){ S.token = null; guardarToken(null); }
+  }
+  if (CODIGO_INICIAL){ return S.sesion ? verFicha(CODIGO_INICIAL) : verPublica(CODIGO_INICIAL); }
+  if (S.sesion) verActivos(); else verLogin();
+}
+
+async function cargarDatos(){
+  const d = await srv('datosIniciales', S.token);
+  Object.assign(S, { sesion:d.sesion, listas:d.listas, activos:d.activos, empresa:d.empresa, url:d.url, fechaCalculo:d.fechaCalculo, ufv:d.ufv });
+  pintarCabecera();
+}
+
+function pintarCabecera(){
+  if (S.sesion){
+    $('#usuario').innerHTML = `<span class="ocultaMovil"><b>${esc(S.sesion.nombre)}</b> · ${esc(S.sesion.rol)}</span><button id="bSalir">Salir</button>`;
+    $('#bSalir').onclick = () => salir();
+    $('#tabs').hidden = false;
+  } else {
+    $('#usuario').innerHTML = '';
+    $('#tabs').hidden = true;
+  }
+}
+
+function marcarTab(t){ document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); }
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => b.dataset.t === 'activos' ? verActivos() : verInventario());
+
+function salir(silencioso){
+  if (S.token && !silencioso) srv('cerrarSesion', S.token).catch(()=>{});
+  S.token = null; S.sesion = null; guardarToken(null);
+  pintarCabecera(); verLogin();
+}
+
+function verLogin(despues){
+  app.innerHTML = `
+    <div class="login panel">
+      <img class="logoGrande" src="${LOGO}" alt="BolDataSat Technologies S.R.L.">
+      <h1>Ingresar</h1>
+      <p class="muted" style="margin-top:0">Sistema de control de activos. Solo personal autorizado.</p>
+      <form id="fLogin">
+        <label class="campo">Usuario<input type="text" id="lU" autocomplete="username" autocapitalize="none" required></label>
+        <label class="campo mt">PIN<input type="password" id="lP" inputmode="numeric" autocomplete="current-password" required></label>
+        <button class="btn pri mt" style="width:100%;justify-content:center" id="bIn">Ingresar</button>
+      </form>
+    </div>`;
+  $('#fLogin').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#bIn'); ocupado(b, true);
+    try {
+      const r = await srv('iniciarSesion', $('#lU').value, $('#lP').value);
+      S.token = r.token; guardarToken(r.token);
+      cargando(); await cargarDatos();
+      despues ? despues() : verActivos();
+    } catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+  $('#lU').focus();
+}
+
+/* ------------------------------------------------------------- Vista pública (escaneo sin sesión) */
+
+async function verPublica(codigo){
+  cargando('Buscando el activo…');
+  try {
+    const a = await srv('fichaPublica', codigo);
+    if (!a){ app.innerHTML = `<div class="publica panel vacio"><h1>Código no registrado</h1><p>El código <span class="cod">${esc(codigo)}</span> no corresponde a ningún activo.</p></div>`; return; }
+    app.innerHTML = `
+      <div class="publica">
+        <div class="foto">${a.foto ? `<img src="${a.foto}" alt="Foto del activo">` : 'Sin fotografía'}</div>
+        <div class="encab"><span class="cod" style="font-size:16px">${esc(a.codigo)}</span>${chip(a.estado)}</div>
+        <h1>${esc(a.descripcion)}</h1>
+        <dl class="datos mt">
+          ${dato('Categoría', a.categoria)}${dato('Marca', a.marca)}${dato('Modelo', a.modelo)}${dato('N° de serie', a.serie)}
+          ${dato('Ubicación', a.ubicacion)}${dato('Responsable', a.responsable)}
+        </dl>
+        <p class="muted mt" style="font-size:13px">Este bien es propiedad de ${esc(a.empresa.replace(/\.$/, ''))}. Si lo encontró fuera de su lugar, comuníquelo a la administración.</p>
+        <button class="btn osc mt" id="bPers">Soy personal autorizado</button>
+      </div>`;
+    $('#bPers').onclick = () => verLogin(() => verFicha(codigo));
+  } catch(err){ app.innerHTML = `<div class="vacio">${esc(err.message)}</div>`; }
+}
+
+function dato(t, v){ return `<div><dt>${esc(t)}</dt><dd>${v ? esc(v) : '<span class="muted">—</span>'}</dd></div>`; }
+
+/* ------------------------------------------------------------- Lista de activos */
+
+function filtrar(){
+  const q = S.f.q.trim().toLowerCase();
+  return S.activos.filter(a => {
+    if (S.f.est === 'vigentes' && a.estado === 'Dado de baja') return false;
+    if (S.f.est && S.f.est !== 'vigentes' && a.estado !== S.f.est) return false;
+    if (S.f.ubi && a.ubicacion !== S.f.ubi) return false;
+    if (S.f.cat && a.categoria !== S.f.cat) return false;
+    if (q && ![a.codigo, a.descripcion, a.marca, a.modelo, a.serie, a.responsable, a.cliente].join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function verActivos(){
+  marcarTab('activos');
+  const vig = S.activos.filter(a => a.estado !== 'Dado de baja');
+  const tot = (k) => vig.reduce((s, a) => s + (Number(a[k]) || 0), 0);
+  const com = vig.filter(a => a.ubicacion === S.listas.comodato).length;
+  app.innerHTML = `
+    <div class="entre">
+      <div><h1>Activos fijos</h1><div class="muted">Valores calculados al ${fecha(S.fechaCalculo)}${S.ufv ? ', actualizados por UFV' : ''}</div></div>
+      <div class="fila">${puedeEditar() ? '<button class="btn pri" id="bNuevo">+ Nuevo activo</button>' : ''}</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Activos vigentes</div><div class="v">${vig.length}</div></div>
+      <div class="kpi"><div class="l">Costo actualizado</div><div class="v">${nf.format(tot('costoAct'))}</div></div>
+      <div class="kpi"><div class="l">Valor en libros</div><div class="v">${nf.format(tot('valorLibros'))}</div></div>
+      <div class="kpi"><div class="l">En comodato</div><div class="v">${com}</div></div>
+    </div>
+    <div class="filtros">
+      <input type="text" class="buscar" id="fQ" placeholder="Buscar por código, descripción, serie, responsable…" value="${esc(S.f.q)}">
+      <select id="fUbi">${opciones(S.listas.ubicaciones, S.f.ubi, 'Todas las ubicaciones')}</select>
+      <select id="fCat">${opciones(S.listas.categorias.map(c => c.nombre), S.f.cat, 'Todas las categorías')}</select>
+      <select id="fEst"><option value="vigentes" ${S.f.est==='vigentes'?'selected':''}>Vigentes</option><option value="" ${S.f.est===''?'selected':''}>Todos los estados</option>${S.listas.estados.map(e => `<option ${S.f.est===e?'selected':''}>${esc(e)}</option>`).join('')}</select>
+    </div>
+    <div id="lista"></div>
+    <div id="selbar"></div>`;
+  if ($('#bNuevo')) $('#bNuevo').onclick = () => verFormActivo(null);
+  $('#fQ').oninput = e => { S.f.q = e.target.value; pintarLista(); };
+  $('#fUbi').onchange = e => { S.f.ubi = e.target.value; pintarLista(); };
+  $('#fCat').onchange = e => { S.f.cat = e.target.value; pintarLista(); };
+  $('#fEst').onchange = e => { S.f.est = e.target.value; pintarLista(); };
+  pintarLista();
+}
+
+function pintarLista(){
+  const l = filtrar();
+  if (!l.length){ $('#lista').innerHTML = `<div class="panel vacio">${S.activos.length ? 'Ningún activo coincide con los filtros.' : 'Todavía no hay activos registrados.'}</div>`; pintarSel(); return; }
+  const todos = l.every(a => S.sel.has(a.codigo));
+  $('#lista').innerHTML = `
+    <div class="envoltura"><table class="tabla">
+      <thead><tr><th style="width:34px"><input type="checkbox" id="selTodos" ${todos ? 'checked' : ''} title="Seleccionar para etiquetas"></th>
+      <th>Código</th><th>Descripción</th><th class="ocultaMovil">Ubicación</th><th class="ocultaMovil">Responsable</th><th>Estado</th><th class="num ocultaMovil">Valor en libros</th></tr></thead>
+      <tbody>${l.map(a => `
+        <tr class="clic" data-c="${esc(a.codigo)}">
+          <td><input type="checkbox" class="sel" data-c="${esc(a.codigo)}" ${S.sel.has(a.codigo) ? 'checked' : ''}></td>
+          <td><span class="cod">${esc(a.codigo)}</span></td>
+          <td><b style="font-weight:600">${esc(a.descripcion)}</b><div class="muted" style="font-size:13px">${esc([a.marca, a.modelo].filter(Boolean).join(' · ') || a.categoria)}${a.serie ? ' · S/N ' + esc(a.serie) : ''}</div></td>
+          <td class="ocultaMovil">${esc(a.ubicacion)}${a.cliente ? `<div class="muted" style="font-size:13px">${esc(a.cliente)}</div>` : ''}</td>
+          <td class="ocultaMovil">${esc(a.responsable || '—')}</td>
+          <td>${chip(a.estado)}</td>
+          <td class="num ocultaMovil">${nf.format(a.valorLibros)}</td>
+        </tr>`).join('')}</tbody></table></div>
+    <div class="muted mt" style="font-size:13px">${l.length} de ${S.activos.length} activos</div>`;
+  $('#selTodos').onclick = e => { l.forEach(a => e.target.checked ? S.sel.add(a.codigo) : S.sel.delete(a.codigo)); pintarLista(); };
+  document.querySelectorAll('.sel').forEach(c => c.onclick = e => { e.stopPropagation(); e.target.checked ? S.sel.add(c.dataset.c) : S.sel.delete(c.dataset.c); pintarSel(); });
+  document.querySelectorAll('tr.clic').forEach(tr => tr.onclick = e => { if (e.target.tagName !== 'INPUT') verFicha(tr.dataset.c); });
+  pintarSel();
+}
+
+function pintarSel(){
+  const n = S.sel.size;
+  $('#selbar').innerHTML = n ? `<div class="selbar"><span><b>${n}</b> ${n === 1 ? 'activo seleccionado' : 'activos seleccionados'}</span>
+    <span class="fila"><button class="btn" id="bLimpiar">Quitar selección</button><button class="btn pri" id="bEt">Imprimir etiquetas QR</button></span></div>` : '';
+  if (n){
+    $('#bLimpiar').onclick = () => { S.sel.clear(); pintarLista(); };
+    $('#bEt').onclick = () => verEtiquetas([...S.sel]);
+  }
+}
+
+/* ------------------------------------------------------------- Ficha completa */
+
+async function verFicha(codigo){
+  marcarTab('activos');
+  cargando('Abriendo la ficha…');
+  let a;
+  try { a = await srv('detalleActivo', S.token, codigo); }
+  catch(err){ app.innerHTML = `<div class="panel vacio">${esc(err.message)}<div class="mt"><button class="btn" id="bV">Volver a la lista</button></div></div>`; $('#bV').onclick = verActivos; return; }
+  const d = a.dep, baja = a.estado === 'Dado de baja';
+  const pct = d.vidaMeses ? Math.round(d.meses / d.vidaMeses * 100) : 0;
+  const ubis = S.listas.ubicaciones;
+  app.innerHTML = `
+    <div class="entre">
+      <div><button class="btn" id="bVolver">← Lista</button></div>
+      <div class="fila">
+        <button class="btn" id="bEtq">Etiqueta QR</button>
+        ${puedeEditar() && !baja ? '<button class="btn osc" id="bEditar">Editar</button>' : ''}
+      </div>
+    </div>
+    <div class="ficha">
+      <div>
+        <div class="foto">${a.foto ? `<img src="${a.foto}" alt="Foto del activo">` : 'Sin fotografía'}</div>
+        <div class="panel mt qrFicha">
+          <div id="qrF"></div>
+          <div><span class="cod" style="font-size:15px">${esc(a.codigo)}</span>
+          <p class="muted" style="font-size:12px;margin:8px 0 10px">Este QR abre la ficha del activo. Es el mismo que se imprime en la etiqueta.</p>
+          <button class="btn" id="bEtq2">Imprimir etiqueta</button></div>
+        </div>
+        ${puedeEditar() && !baja ? `
+        <div class="panel mt">
+          <h2>Verificar existencia</h2>
+          <p class="muted" style="margin:0 0 10px;font-size:13px">Confirme dónde se encuentra físicamente el activo.</p>
+          <select id="vUbi">${opciones(ubis, a.ubicacion)}</select>
+          <input type="text" id="vObs" class="mt" placeholder="Observación (opcional)">
+          <button class="btn pri mt" id="bVer" style="width:100%;justify-content:center">Registrar verificación</button>
+        </div>` : ''}
+      </div>
+      <div>
+        <div class="fila"><span class="cod" style="font-size:16px">${esc(a.codigo)}</span>${chip(a.estado)}</div>
+        <h1 style="margin-top:8px">${esc(a.descripcion)}</h1>
+        <dl class="datos mt">
+          ${dato('Categoría', a.categoria)}${dato('Marca', a.marca)}${dato('Modelo', a.modelo)}${dato('N° de serie', a.serie)}
+          ${dato('Ubicación', a.ubicacion)}${dato('Responsable', a.responsable)}
+          ${a.ubicacion === S.listas.comodato ? dato('Cliente en comodato', a.cliente) + dato('Dirección del cliente', a.direccion) : ''}
+          ${dato('Fecha de adquisición', fecha(a.fechaAdq))}${dato('Costo de adquisición', bs(a.costo))}
+          ${dato('Proveedor', a.proveedor)}${dato('N° de factura', a.factura)}
+          ${a.residual ? dato('Valor residual', bs(a.residual)) : ''}
+          ${baja ? dato('Fecha de baja', fecha(a.fechaBaja)) + dato('Motivo de baja', a.motivoBaja) : ''}
+        </dl>
+        ${a.observaciones ? `<p class="mt"><span class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.5px">Observaciones</span><br>${esc(a.observaciones)}</p>` : ''}
+
+        <div class="panel mt2">
+          <h2>Depreciación al ${fecha(a.fechaCalculo)}</h2>
+          ${d.vidaMeses ? `
+            <div class="fila" style="justify-content:space-between;font-size:13px"><span>${d.meses} de ${d.vidaMeses} meses · vida útil ${d.vidaAnios} años</span><span class="mono">${pct}%</span></div>
+            <div class="barraDep"><i style="width:${pct}%"></i></div>` : '<p class="muted" style="margin:0">Esta categoría no se deprecia.</p>'}
+          <div class="cuadroDep">
+            <div><span>Costo histórico</span><b>${nf.format(d.costoHist)}</b></div>
+            <div><span>Factor UFV</span><b>${a.ufvActiva ? d.factor.toFixed(5) : 'No aplica'}</b></div>
+            <div><span>Costo actualizado</span><b>${nf.format(d.costoAct)}</b></div>
+            <div><span>Dep. de la gestión</span><b>${nf.format(d.depGestion)}</b></div>
+            <div><span>Dep. acumulada</span><b>${nf.format(d.depAcum)}</b></div>
+            <div class="clave"><span>Valor en libros</span><b>${nf.format(d.valorLibros)}</b></div>
+          </div>
+          ${d.avisos.length ? `<div class="nota mt">${d.avisos.map(esc).join('<br>')}</div>` : ''}
+        </div>
+
+        ${a.verificaciones.length ? `
+        <div class="mt2"><h2>Verificaciones físicas</h2>
+          <div class="envoltura"><table class="tabla hist"><thead><tr><th>Fecha</th><th>Ubicación</th><th>Coincide</th><th class="ocultaMovil">Por</th></tr></thead>
+          <tbody>${a.verificaciones.map(v => `<tr><td>${esc(v.fecha)}</td><td>${esc(v.ubicacion)}<div class="muted">${esc(v.obs)}</div></td><td>${v.coincide === 'Sí' ? '<span class="chip Normal">Sí</span>' : '<span class="chip Dado">No</span>'}</td><td class="ocultaMovil">${esc(v.por)}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+
+        <div class="mt2"><h2>Historial de cambios</h2>
+          ${a.historial.length ? `<div class="envoltura"><table class="tabla hist"><thead><tr><th>Fecha</th><th>Campo</th><th>Antes</th><th>Después</th><th class="ocultaMovil">Usuario</th></tr></thead>
+          <tbody>${a.historial.map(h => `<tr><td style="white-space:nowrap">${esc(h.fecha)}</td><td>${esc(h.campo)}</td><td class="muted">${esc(h.antes)}</td><td>${esc(h.despues)}</td><td class="ocultaMovil">${esc(h.usuario)}<div class="muted">${esc(h.origen)}</div></td></tr>`).join('')}</tbody></table></div>`
+          : '<p class="muted">Sin cambios registrados.</p>'}
+          <p class="muted" style="font-size:12px">Registrado por ${esc(a.registradoPor || '—')} el ${esc(a.fechaRegistro || '—')}.</p>
+        </div>
+
+        ${esAdmin() && !baja ? `
+        <div class="panel mt2" style="border-color:#E4B9AC">
+          <h2 style="color:var(--rojo)">Dar de baja</h2>
+          <div class="rejilla" style="grid-template-columns:1fr 2fr">
+            <label class="campo">Fecha de baja<input type="date" id="bjF" value="${hoyISO()}" max="${hoyISO()}"></label>
+            <label class="campo">Motivo<input type="text" id="bjM" placeholder="Venta, robo, obsolescencia, siniestro…"></label>
+          </div>
+          <button class="btn rojo mt" id="bBaja">Dar de baja el activo</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+
+  $('#bVolver').onclick = verActivos;
+  $('#bEtq').onclick = () => verEtiquetas([a.codigo]);
+  $('#bEtq2').onclick = () => verEtiquetas([a.codigo]);
+  if (S.url && window.QRCode) new QRCode($('#qrF'), { text: S.url + (S.url.includes('?') ? '&' : '?') + 'c=' + encodeURIComponent(a.codigo), width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+  else $('#qrF').innerHTML = '<div class="nota">Falta la URL de la aplicación en Parámetros.</div>';
+  if ($('#bEditar')) $('#bEditar').onclick = () => verFormActivo(a);
+  if ($('#bVer')) $('#bVer').onclick = async () => {
+    const b = $('#bVer'); ocupado(b, true);
+    try {
+      const r = await srv('verificarActivo', S.token, a.codigo, $('#vUbi').value, $('#vObs').value);
+      aviso(r.coincide === 'Sí' ? 'Verificación registrada: el activo está en su ubicación.' : 'Verificación registrada con diferencia de ubicación.', r.coincide === 'Sí' ? '' : 'error');
+      verFicha(a.codigo);
+    } catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+  if ($('#bBaja')) $('#bBaja').onclick = async () => {
+    if (!confirm('¿Dar de baja el activo ' + a.codigo + '? Dejará de depreciarse y no podrá editarse.')) return;
+    const b = $('#bBaja'); ocupado(b, true);
+    try { await srv('darDeBaja', S.token, a.codigo, $('#bjF').value, $('#bjM').value); aviso('Activo dado de baja.'); await cargarDatos(); verFicha(a.codigo); }
+    catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+}
+
+/* ------------------------------------------------------------- Formulario de activo */
+
+function comprimir(file, max, q){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height; const k = Math.min(1, (max || 1280) / Math.max(w, h));
+        w = Math.round(w * k); h = Math.round(h * k);
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', q || 0.8));
+      };
+      img.onerror = () => rej(new Error('No se pudo leer la imagen.'));
+      img.src = r.result;
+    };
+    r.onerror = () => rej(new Error('No se pudo leer el archivo.'));
+    r.readAsDataURL(file);
+  });
+}
+
+function verFormActivo(a){
+  const nuevo = !a;
+  a = a || { estado:'Operativo', fechaAdq:'' };
+  const bloqueado = !nuevo && !esAdmin();
+  let foto = null;
+  const L = S.listas;
+  app.innerHTML = `
+    <div class="entre"><div><h1>${nuevo ? 'Nuevo activo' : 'Editar ' + esc(a.codigo)}</h1>
+      <div class="muted">${nuevo ? 'El código se asigna automáticamente según la categoría.' : 'Los cambios quedan registrados en la bitácora.'}</div></div></div>
+    <form id="fA" class="panel">
+      <div class="rejilla">
+        <label class="campo">Categoría *<select id="aCat" required>${opciones(L.categorias.map(c => c.nombre), a.categoria, 'Elegir…')}</select></label>
+        <label class="campo" style="grid-column:span 2">Descripción *<input type="text" id="aDes" value="${esc(a.descripcion)}" required placeholder="Ej. Laptop para contabilidad"></label>
+        <label class="campo">Marca<input type="text" id="aMar" value="${esc(a.marca)}"></label>
+        <label class="campo">Modelo<input type="text" id="aMod" value="${esc(a.modelo)}"></label>
+        <label class="campo">N° de serie<input type="text" id="aSer" value="${esc(a.serie)}"></label>
+        <label class="campo">Ubicación *<select id="aUbi" required>${opciones(L.ubicaciones, a.ubicacion, 'Elegir…')}</select></label>
+        <label class="campo">Responsable<select id="aRes">${opciones(L.responsables, a.responsable, 'Sin asignar')}</select></label>
+        <label class="campo">Estado<select id="aEst">${opciones(L.estados.filter(e => e !== 'Dado de baja'), a.estado)}</select></label>
+        <label class="campo comodato">Cliente en comodato *<input type="text" id="aCli" value="${esc(a.cliente)}"></label>
+        <label class="campo comodato" style="grid-column:span 2">Dirección del cliente<input type="text" id="aDir" value="${esc(a.direccion)}"></label>
+        <label class="campo">Fecha de adquisición *<input type="date" id="aFec" value="${esc(a.fechaAdq)}" max="${hoyISO()}" required ${bloqueado ? 'disabled' : ''}></label>
+        <label class="campo">Costo de adquisición (Bs) *<input type="number" id="aCos" step="0.01" min="0" value="${a.costo ?? ''}" required ${bloqueado ? 'disabled' : ''}></label>
+        <label class="campo">Valor residual (Bs)<input type="number" id="aRsd" step="0.01" min="0" value="${a.residual || ''}" placeholder="0.00" ${bloqueado ? 'disabled' : ''}></label>
+        <label class="campo">Proveedor<input type="text" id="aPro" value="${esc(a.proveedor)}"></label>
+        <label class="campo">N° de factura<input type="text" id="aFac" value="${esc(a.factura)}"></label>
+        <label class="campo">Fotografía<input type="file" id="aFoto" accept="image/*" capture="environment" style="margin-top:8px"></label>
+        <label class="campo ancho">Observaciones<textarea id="aObs" rows="2">${esc(a.observaciones)}</textarea></label>
+      </div>
+      ${bloqueado ? '<div class="nota mt">La fecha, el costo y el valor residual de un activo ya registrado solo pueden ser corregidos por un administrador.</div>' : ''}
+      <div class="nota ok mt">El costo de adquisición incluye el precio de compra y los costos necesarios para dejar el bien en funcionamiento (transporte, instalación), sin el IVA que se toma como crédito fiscal.</div>
+      <img id="prev" alt="" style="display:none;max-width:220px;border-radius:8px;margin-top:14px">
+      <div class="fila mt2"><button class="btn pri" id="bGuardar">${nuevo ? 'Registrar activo' : 'Guardar cambios'}</button><button type="button" class="btn" id="bCanc">Cancelar</button></div>
+    </form>`;
+  const ver = () => document.querySelectorAll('.comodato').forEach(el => el.style.display = $('#aUbi').value === L.comodato ? '' : 'none');
+  $('#aUbi').onchange = ver; ver();
+  $('#aCat').onchange = () => { if ($('#aCat').value === 'Routers en comodato' && !$('#aUbi').value) { $('#aUbi').value = L.comodato; ver(); } };
+  $('#bCanc').onclick = () => nuevo ? verActivos() : verFicha(a.codigo);
+  $('#aFoto').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { foto = await comprimir(f, 1280, 0.8); $('#prev').src = foto; $('#prev').style.display = 'block'; }
+    catch(err){ aviso(err.message, 'error'); }
+  };
+  $('#fA').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#bGuardar'); ocupado(b, true);
+    const d = {
+      codigo: nuevo ? '' : a.codigo, categoria: $('#aCat').value, descripcion: $('#aDes').value, marca: $('#aMar').value,
+      modelo: $('#aMod').value, serie: $('#aSer').value, ubicacion: $('#aUbi').value, responsable: $('#aRes').value,
+      estado: $('#aEst').value, cliente: $('#aCli').value, direccion: $('#aDir').value,
+      fechaAdq: bloqueado ? a.fechaAdq : $('#aFec').value, costo: bloqueado ? a.costo : $('#aCos').value,
+      residual: bloqueado ? a.residual : $('#aRsd').value, proveedor: $('#aPro').value, factura: $('#aFac').value,
+      observaciones: $('#aObs').value
+    };
+    try {
+      const r = await srv('guardarActivo', S.token, d, foto ? foto.split(',')[1] : null);
+      aviso(nuevo ? 'Activo registrado con el código ' + r.codigo + '.' : 'Cambios guardados.');
+      await cargarDatos();
+      verFicha(r.codigo);
+    } catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+}
+
+/* ------------------------------------------------------------- Etiquetas QR en tamaño carta */
+
+const TAM = {
+  pequena: { cols:4, nombre:'Pequeña · 4 por fila', cod:'8pt' },
+  mediana: { cols:3, nombre:'Mediana · 3 por fila', cod:'9.5pt' },
+  grande:  { cols:2, nombre:'Grande · 2 por fila', cod:'12pt' }
+};
+
+async function verEtiquetas(codigos){
+  cargando('Preparando etiquetas…');
+  let d;
+  try { d = await srv('etiquetas', S.token, codigos); } catch(err){ aviso(err.message, 'error'); return verActivos(); }
+  let tam = 'mediana', desc = true;
+  app.innerHTML = `
+    <div class="entre">
+      <div><h1>Etiquetas QR</h1><div class="muted">${d.items.length} ${d.items.length === 1 ? 'etiqueta' : 'etiquetas'} · hoja tamaño carta</div></div>
+      <div class="fila">
+        <select id="eTam" style="width:auto">${Object.entries(TAM).map(([k, v]) => `<option value="${k}" ${k === tam ? 'selected' : ''}>${v.nombre}</option>`).join('')}</select>
+        <label class="fila" style="gap:6px;font-size:14px"><input type="checkbox" id="eDesc" checked> Descripción</label>
+        <button class="btn" id="eVolver">Volver</button>
+        <button class="btn pri" id="eImp">Imprimir</button>
+      </div>
+    </div>
+    ${d.url ? '' : '<div class="nota" style="margin-bottom:12px">Falta la URL de la aplicación en la hoja Parámetros. Sin ella los QR no abrirán la ficha.</div>'}
+    <div class="hojaEt" id="hojaEt"><div class="gridEt" id="gridEt"></div></div>
+    <p class="muted mt" style="font-size:13px;text-align:center">En el diálogo de impresión elija tamaño Carta y escala 100 %. Las líneas punteadas son guías de corte.</p>`;
+  const pintar = () => {
+    const t = TAM[tam];
+    const g = $('#gridEt');
+    g.style.gridTemplateColumns = `repeat(${t.cols}, 1fr)`;
+    g.innerHTML = d.items.map(i => `
+      <div class="et">
+        <img class="elogo" src="${LOGO}" alt="">
+        <div class="qr" data-c="${esc(i.codigo)}" style="width:${t.cols === 4 ? 70 : t.cols === 3 ? 72 : 62}%"></div>
+        <div class="e2" style="font-size:${t.cod}">${esc(i.codigo)}</div>
+        ${desc ? `<div class="e3">${esc(i.descripcion)}</div>` : ''}
+      </div>`).join('');
+    const base = d.url + (d.url.includes('?') ? '&' : '?') + 'c=';
+    g.querySelectorAll('.qr').forEach(el => {
+      new QRCode(el, { text: base + el.dataset.c, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M });
+    });
+  };
+  $('#eTam').onchange = e => { tam = e.target.value; pintar(); };
+  $('#eDesc').onchange = e => { desc = e.target.checked; pintar(); };
+  $('#eVolver').onclick = () => codigos.length === 1 ? verFicha(codigos[0]) : verActivos();
+  $('#eImp').onclick = () => setTimeout(() => window.print(), 150);
+  pintar();
+}
+
+/* ------------------------------------------------------------- Inventarios */
+
+async function verInventario(){
+  marcarTab('inventario');
+  cargando('Cargando inventario…');
+  try { S.inv = await srv('inventario', S.token); } catch(err){ app.innerHTML = `<div class="panel vacio">${esc(err.message)}</div>`; return; }
+  pintarInventario();
+}
+
+function pintarInventario(){
+  const it = S.inv.items;
+  const valor = it.reduce((s, i) => s + i.valor, 0);
+  const reponer = it.filter(i => i.situacion !== 'Normal').length;
+  app.innerHTML = `
+    <div class="entre">
+      <div><h1>Inventarios</h1><div class="muted">Valuación por promedio ponderado</div></div>
+      <div class="fila">${puedeEditar() ? '<button class="btn" id="bItem">+ Nuevo ítem</button><button class="btn pri" id="bMov">Registrar movimiento</button>' : ''}</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Ítems</div><div class="v">${it.length}</div></div>
+      <div class="kpi"><div class="l">Valor del inventario</div><div class="v">${nf.format(valor)}</div></div>
+      <div class="kpi"><div class="l">Por reponer o sin stock</div><div class="v" style="color:${reponer ? 'var(--oxido)' : 'inherit'}">${reponer}</div></div>
+      <div class="kpi"><div class="l">Ubicaciones</div><div class="v">${S.inv.listas.ubicaciones.filter(u => u !== S.inv.listas.comodato).length}</div></div>
+    </div>
+    <input type="text" id="iQ" placeholder="Buscar ítem…" style="margin-bottom:12px">
+    <div id="iLista"></div>`;
+  if ($('#bItem')) $('#bItem').onclick = () => verFormItem(null);
+  if ($('#bMov')) $('#bMov').onclick = () => verFormMov('');
+  const pintarL = () => {
+    const q = $('#iQ').value.trim().toLowerCase();
+    const l = it.filter(i => !q || (i.codigo + ' ' + i.descripcion + ' ' + i.categoria).toLowerCase().includes(q));
+    $('#iLista').innerHTML = l.length ? `
+      <div class="envoltura"><table class="tabla">
+        <thead><tr><th>Código</th><th>Descripción</th><th class="num">Stock</th><th class="ocultaMovil">Unidad</th><th class="num ocultaMovil">Costo promedio</th><th class="num ocultaMovil">Valor</th><th>Situación</th></tr></thead>
+        <tbody>${l.map(i => `<tr class="clic" data-c="${esc(i.codigo)}">
+          <td><span class="cod">${esc(i.codigo)}</span></td>
+          <td><b style="font-weight:600">${esc(i.descripcion)}</b><div class="muted" style="font-size:13px">${esc(i.categoria)}${i.stockMin ? ' · mínimo ' + nq.format(i.stockMin) : ''}</div></td>
+          <td class="num">${nq.format(i.stock)}</td><td class="ocultaMovil">${esc(i.unidad)}</td>
+          <td class="num ocultaMovil">${nf.format(i.prom)}</td><td class="num ocultaMovil">${nf.format(i.valor)}</td>
+          <td>${chip(i.situacion)}</td></tr>`).join('')}</tbody></table></div>`
+      : `<div class="panel vacio">${it.length ? 'Ningún ítem coincide.' : 'Todavía no hay ítems. Registre el catálogo con «Nuevo ítem».'}</div>`;
+    document.querySelectorAll('#iLista tr.clic').forEach(tr => tr.onclick = () => verKardex(tr.dataset.c));
+  };
+  $('#iQ').oninput = pintarL;
+  pintarL();
+}
+
+function verFormItem(i){
+  const nuevo = !i; i = i || {};
+  const L = S.inv.listas;
+  app.innerHTML = `
+    <div class="entre"><div><h1>${nuevo ? 'Nuevo ítem de inventario' : 'Editar ' + esc(i.codigo)}</h1></div></div>
+    <form id="fI" class="panel">
+      <div class="rejilla">
+        <label class="campo" style="grid-column:span 2">Descripción *<input type="text" id="iDes" value="${esc(i.descripcion)}" required placeholder="Ej. Patch cord UTP cat. 6 de 1 m"></label>
+        <label class="campo">Categoría<select id="iCat">${opciones(L.catInventario, i.categoria, 'Sin categoría')}</select></label>
+        <label class="campo">Unidad de medida *<select id="iUni" required>${opciones(L.unidades, i.unidad, 'Elegir…')}</select></label>
+        <label class="campo">Stock mínimo<input type="number" id="iMin" min="0" step="any" value="${i.stockMin || ''}" placeholder="0"></label>
+        <label class="campo ancho">Observaciones<textarea id="iObs" rows="2">${esc(i.observaciones)}</textarea></label>
+      </div>
+      <p class="muted" style="font-size:13px">Las existencias no se escriben aquí: resultan de las entradas y salidas del kárdex.</p>
+      <div class="fila mt"><button class="btn pri" id="bGI">${nuevo ? 'Crear ítem' : 'Guardar cambios'}</button><button type="button" class="btn" id="bCI">Cancelar</button></div>
+    </form>`;
+  $('#bCI').onclick = () => nuevo ? pintarInventario() : verKardex(i.codigo);
+  $('#fI').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#bGI'); ocupado(b, true);
+    try {
+      const r = await srv('guardarItem', S.token, { codigo: i.codigo || '', descripcion: $('#iDes').value, categoria: $('#iCat').value, unidad: $('#iUni').value, stockMin: $('#iMin').value, observaciones: $('#iObs').value });
+      aviso(nuevo ? 'Ítem creado: ' + r.codigo + '.' : 'Ítem actualizado.');
+      S.inv = await srv('inventario', S.token);
+      verKardex(r.codigo);
+    } catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+}
+
+function verFormMov(codigo){
+  const L = S.inv.listas;
+  const ubis = L.ubicaciones.filter(u => u !== L.comodato);
+  app.innerHTML = `
+    <div class="entre"><div><h1>Registrar movimiento</h1><div class="muted">Entrada por compra, salida por instalación o consumo, ajuste por conteo físico o traspaso entre ubicaciones.</div></div></div>
+    <form id="fM" class="panel">
+      <div class="rejilla">
+        <label class="campo">Tipo *<select id="mTip" required>${opciones(L.tiposMov, 'Entrada')}</select></label>
+        <label class="campo" style="grid-column:span 2">Ítem *<select id="mCod" required>${'<option value="">Elegir…</option>' + S.inv.items.map(i => `<option value="${esc(i.codigo)}" ${i.codigo === codigo ? 'selected' : ''}>${esc(i.codigo)} · ${esc(i.descripcion)}</option>`).join('')}</select></label>
+        <label class="campo">Fecha *<input type="date" id="mFec" value="${hoyISO()}" max="${hoyISO()}" required></label>
+        <label class="campo" id="lUbi">Ubicación *<select id="mUbi" required>${opciones(ubis, '', 'Elegir…')}</select></label>
+        <label class="campo" id="lDes">Ubicación de destino *<select id="mDes">${opciones(ubis, '', 'Elegir…')}</select></label>
+        <label class="campo">Cantidad *<input type="number" id="mCan" min="0" step="any" required></label>
+        <label class="campo" id="lCos">Costo unitario (Bs) *<input type="number" id="mCos" min="0" step="0.0001"></label>
+        <label class="campo" id="lDoc">Documento de respaldo<input type="text" id="mDoc" placeholder="Factura, nota de remisión, orden de trabajo…"></label>
+        <label class="campo" style="grid-column:span 2" id="lMot">Motivo o destino<input type="text" id="mMot" placeholder="Ej. Instalación al cliente…"></label>
+        <label class="campo">Responsable<select id="mRes">${opciones(L.responsables, '', 'Sin indicar')}</select></label>
+      </div>
+      <div class="nota ok mt" id="mDisp" style="display:none"></div>
+      <div class="fila mt2"><button class="btn pri" id="bGM">Registrar</button><button type="button" class="btn" id="bCM">Cancelar</button></div>
+    </form>`;
+  const ajustar = () => {
+    const t = $('#mTip').value;
+    $('#lDes').style.display = t === 'Traspaso' ? '' : 'none';
+    $('#lCos').style.display = (t === 'Entrada' || t === 'Ajuste positivo') ? '' : 'none';
+    $('#lCos').firstChild.textContent = t === 'Entrada' ? 'Costo unitario (Bs) *' : 'Costo unitario (Bs), vacío = promedio';
+    $('#lDoc').firstChild.textContent = t === 'Entrada' ? 'Documento de respaldo *' : 'Documento de respaldo';
+    $('#lMot').firstChild.textContent = t.startsWith('Ajuste') ? 'Motivo del ajuste *' : 'Motivo o destino';
+    $('#lUbi').firstChild.textContent = t === 'Traspaso' ? 'Ubicación de origen *' : 'Ubicación *';
+    const it = S.inv.items.find(i => i.codigo === $('#mCod').value);
+    const u = $('#mUbi').value;
+    const d = $('#mDisp');
+    if (it){
+      const enU = u ? (it.porUbicacion[u] || 0) : null;
+      d.style.display = '';
+      d.textContent = `Stock actual: ${nq.format(it.stock)} ${it.unidad}` + (u ? ` · en ${u}: ${nq.format(enU)}` : '') + ` · costo promedio Bs ${nf.format(it.prom)}`;
+    } else d.style.display = 'none';
+  };
+  ['mTip', 'mCod', 'mUbi'].forEach(id => $('#' + id).onchange = ajustar);
+  ajustar();
+  $('#bCM').onclick = () => codigo ? verKardex(codigo) : pintarInventario();
+  $('#fM').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#bGM'); ocupado(b, true);
+    const cod = $('#mCod').value;
+    try {
+      S.inv = await srv('registrarMovimiento', S.token, {
+        tipo: $('#mTip').value, codigo: cod, fecha: $('#mFec').value, ubicacion: $('#mUbi').value, destino: $('#mDes').value,
+        cantidad: $('#mCan').value, costoUnit: $('#mCos').value, documento: $('#mDoc').value, motivo: $('#mMot').value, responsable: $('#mRes').value
+      });
+      aviso('Movimiento registrado.');
+      verKardex(cod);
+    } catch(err){ aviso(err.message, 'error'); ocupado(b, false); }
+  };
+}
+
+async function verKardex(codigo){
+  marcarTab('inventario');
+  const i = S.inv.items.find(x => x.codigo === codigo);
+  if (!i) return pintarInventario();
+  cargando('Cargando kárdex…');
+  let movs;
+  try { movs = await srv('kardexItem', S.token, codigo); } catch(err){ aviso(err.message, 'error'); return pintarInventario(); }
+  const ubis = Object.entries(i.porUbicacion).filter(([, q]) => q);
+  app.innerHTML = `
+    <div class="entre">
+      <div><button class="btn" id="kV">← Inventario</button></div>
+      <div class="fila">${puedeEditar() ? '<button class="btn" id="kE">Editar ítem</button><button class="btn pri" id="kM">Registrar movimiento</button>' : ''}</div>
+    </div>
+    <div class="fila"><span class="cod" style="font-size:16px">${esc(i.codigo)}</span>${chip(i.situacion)}</div>
+    <h1 style="margin-top:8px">${esc(i.descripcion)}</h1>
+    <div class="muted">${esc(i.categoria || 'Sin categoría')} · unidad: ${esc(i.unidad)}${i.stockMin ? ' · stock mínimo ' + nq.format(i.stockMin) : ''}</div>
+    <div class="kpis mt">
+      <div class="kpi"><div class="l">Stock total</div><div class="v">${nq.format(i.stock)}</div></div>
+      <div class="kpi"><div class="l">Costo promedio</div><div class="v">${nf.format(i.prom)}</div></div>
+      <div class="kpi"><div class="l">Valor</div><div class="v">${nf.format(i.valor)}</div></div>
+      <div class="kpi"><div class="l">Por ubicación</div><div style="font-size:13px;margin-top:4px">${ubis.length ? ubis.map(([u, q]) => `${esc(u)}: <b class="mono">${nq.format(q)}</b>`).join('<br>') : '—'}</div></div>
+    </div>
+    <h2 class="mt">Kárdex físico valorado</h2>
+    ${movs.length ? `<div class="envoltura"><table class="tabla hist">
+      <thead><tr><th>Fecha</th><th>N°</th><th>Tipo</th><th class="ocultaMovil">Ubicación</th><th class="num">Cantidad</th><th class="num ocultaMovil">C. unitario</th><th class="num ocultaMovil">Importe</th><th class="num">Saldo</th><th class="num ocultaMovil">Saldo Bs</th></tr></thead>
+      <tbody>${movs.map(m => {
+        const neg = ['Salida', 'Ajuste negativo'].includes(m.tipo);
+        return `<tr>
+          <td style="white-space:nowrap">${fecha(m.fecha)}</td><td class="mono">${esc(m.numero)}</td>
+          <td>${esc(m.tipo)}<div class="muted">${esc(m.documento || m.motivo)}</div>${m.alerta ? `<div style="color:var(--oxido);font-size:12px">${esc(m.alerta)}</div>` : ''}</td>
+          <td class="ocultaMovil">${esc(m.ubicacion)}${m.destino ? ' → ' + esc(m.destino) : ''}</td>
+          <td class="num">${neg ? '−' : m.tipo === 'Traspaso' ? '⇄' : '+'}${nq.format(m.cantidad)}</td>
+          <td class="num ocultaMovil">${nf.format(m.cuAplicado || 0)}</td><td class="num ocultaMovil">${nf.format(m.importe || 0)}</td>
+          <td class="num">${nq.format(m.saldoCant || 0)}</td><td class="num ocultaMovil">${nf.format(m.saldoValor || 0)}</td></tr>`;
+      }).join('')}</tbody></table></div>` : '<div class="panel vacio">Sin movimientos todavía.</div>'}`;
+  $('#kV').onclick = pintarInventario;
+  if ($('#kE')) $('#kE').onclick = () => verFormItem(i);
+  if ($('#kM')) $('#kM').onclick = () => verFormMov(i.codigo);
+}
+
+iniciar();
+</script>
+</body>
+</html>
